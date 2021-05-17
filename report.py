@@ -25,6 +25,15 @@ def writeDataToYaml(data):
         yaml.dump(data, f, allow_unicode=True)
 
 
+def isUserExist(qq: str) -> bool:
+    config = getYmlConfig()
+    users = config['users']
+    for user in users:
+        if user['user']['qq'] == qq:
+            return True
+    return False
+
+
 @sv.on_fullmatch("填报初始化")
 async def init(bot, ev):
     # if not priv.check_priv(ev, priv.SUPERUSER):
@@ -51,7 +60,7 @@ async def addinfo(bot, ev):
 # 添加填报用户 012xx passwd nickname
 
 
-async def _addinfo(bot, ev: CQEvent):
+async def _addinfo(bot, ev):
     # 处理输入数据
     allText: str = ev.message.extract_plain_text()
     strList = allText.split(' ')
@@ -64,7 +73,7 @@ async def _addinfo(bot, ev: CQEvent):
     idCard = strList[1]
     nickName = strList[2]
     config = getYmlConfig()
-    if 'users' not in config.keys():
+    if 'users' not in config.keys() or len(config['users']) == 0:
         usersData = {
             'users': [{'user': {'sn': sn,
                                 'idCard': idCard,
@@ -73,6 +82,9 @@ async def _addinfo(bot, ev: CQEvent):
         }
         writeDataToYaml(usersData)
     else:
+        if isUserExist(qq):
+            await bot.send(ev, '请不要重复添加')
+            return
         usersData = {
             'user': {
                 'sn': sn,
@@ -84,6 +96,17 @@ async def _addinfo(bot, ev: CQEvent):
         config["users"].append(usersData)
         writeDataToYaml(config)
     await bot.send(ev, '添加成功')
+
+
+@sv.on_fullmatch('删除用户')
+async def deleteUser(bot, ev):
+    config = getYmlConfig()
+    qq = str(ev.user_id)
+    userList = config['users']
+    userList = list(filter(lambda it: it['user']['qq'] != qq, userList))
+    config['users'] = userList
+    writeDataToYaml(config)
+    await bot.send(ev, '删除完成')
 
 
 @sv.on_fullmatch("填报用户列表")
