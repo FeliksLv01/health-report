@@ -123,6 +123,9 @@ async def allinfo(bot, ev):
     qq = str(ev.user_id)
     config = getYmlConfig()
     msg = '未在用户列表中找到您'
+    if 'users' not in config.keys() or len(config['users']) == 0:
+        await bot.send(ev, msg)
+        return
     for user in config['users']:
         if user['user']['qq'] == qq:
             userData = user['user']
