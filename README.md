@@ -1,6 +1,6 @@
 # Health Report
 
-hoshinobot武汉理工大学自动健康填报插件
+hoshinobot自动健康填报插件
 
 ## 使用指南
 
